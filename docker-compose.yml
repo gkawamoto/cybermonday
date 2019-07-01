@@ -1,0 +1,9 @@
+version: '2'
+
+services:
+  server:
+    build: .
+    ports:
+    - 8080:80/tcp
+    volumes:
+    - ./example/:/usr/share/nginx/html/:ro
