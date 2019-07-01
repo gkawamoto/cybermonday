@@ -21,6 +21,7 @@ var envs = map[string]string{}
 
 func init() {
 	var env string
+	var err error
 	for _, env = range os.Environ() {
 		var parts = strings.Split(env, "=")
 		envs[parts[0]] = strings.Join(parts[1:], "=")
@@ -29,39 +30,14 @@ func init() {
 	if utf8.RuneCountInString(basePath) == 0 {
 		basePath = "."
 	}
-	cybermondayTitle = os.Getenv("CYBERMONDAY_TITLE")
-	if utf8.RuneCountInString(cybermondayTitle) == 0 {
-		cybermondayTitle = "Home"
-	}
-	cybermondayBootstrapRef = os.Getenv("CYBERMONDAY_BOOTSTRAP_REF")
-	if utf8.RuneCountInString(cybermondayBootstrapRef) == 0 {
-		cybermondayBootstrapRef = "//stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-	}
 	defaultTemplate = os.Getenv("CYBERMONDAY_TEMPLATE")
 	if utf8.RuneCountInString(defaultTemplate) == 0 {
-		defaultTemplate = `<!DOCTYPE html>
-<html>
-<head>
-<link rel="stylesheet" href="{{.Bootstrap}}">
-<style type="text/css">
-main > div.container {
-	margin-top: 30px;
-}
-</style>
-</head>
-<body>
-<header>
-	<div class="navbar navbar-dark bg-dark shadow-sm">
-    <div class="container d-flex justify-content-between">
-      <a href="/" class="navbar-brand d-flex align-items-center">{{ .Title }}</a>
-    </div>
-	</div>
-</header>
-<main>
-	<div class="container">{{ .Content }}</div>
-</main>
-</body>
-</html>`
+		var data []byte
+		data, err = ioutil.ReadFile("/application/default.template.html")
+		if err != nil {
+			log.Panic(err)
+		}
+		defaultTemplate = string(data)
 	}
 }
 
@@ -112,10 +88,8 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	var d = templateData{
-		Bootstrap: cybermondayBootstrapRef,
-		Title:     cybermondayTitle,
-		Content:   md.RenderToString(data),
-		Env:       envs,
+		Content: md.RenderToString(data),
+		Env:     envs,
 	}
 	err = mdTemplate.Execute(w, d)
 	if err != nil {
