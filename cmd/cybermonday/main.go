@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -14,14 +15,12 @@ import (
 )
 
 var md = markdown.New(markdown.XHTMLOutput(true))
-var defaultTemplate string
 var basePath, cybermondayBootstrapRef, cybermondayTitle string
 var mdTemplate *template.Template
 var envs = map[string]string{}
 
 func init() {
 	var env string
-	var err error
 	for _, env = range os.Environ() {
 		var parts = strings.Split(env, "=")
 		envs[parts[0]] = strings.Join(parts[1:], "=")
@@ -30,14 +29,32 @@ func init() {
 	if utf8.RuneCountInString(basePath) == 0 {
 		basePath = "."
 	}
-	defaultTemplate = os.Getenv("CYBERMONDAY_TEMPLATE")
+	loadTemplate()
+}
+
+func loadTemplate() {
+	var defaultTemplate string
+	var err error
+	var result = os.Getenv("CYBERMONDAY_TEMPLATE")
 	if utf8.RuneCountInString(defaultTemplate) == 0 {
+		var defaultTemplatePath = os.Getenv("CYBERMONDAY_TEMPLATE_PATH")
+		if utf8.RuneCountInString(defaultTemplatePath) == 0 {
+			defaultTemplatePath = os.Getenv("CYBERMONDAY_DEFAULT_TEMPLATE_PATH")
+			if utf8.RuneCountInString(defaultTemplatePath) == 0 {
+				defaultTemplatePath = "./resources/index.tplt.html"
+			}
+		}
 		var data []byte
-		data, err = ioutil.ReadFile("/application/default.template.html")
+		data, err = ioutil.ReadFile(defaultTemplatePath)
 		if err != nil {
 			log.Panic(err)
 		}
-		defaultTemplate = string(data)
+		result = string(data)
+	}
+	defaultTemplate = result
+	mdTemplate, err = template.New("template").Parse(defaultTemplate)
+	if err != nil {
+		log.Panic(err)
 	}
 }
 
@@ -50,13 +67,9 @@ type templateData struct {
 
 func main() {
 	var err error
-	mdTemplate, err = template.New("template").Parse(defaultTemplate)
-	if err != nil {
-		log.Panic(err)
-	}
 	var s = &http.Server{
 		Addr:    "0.0.0.0:8000",
-		Handler: &handler{},
+		Handler: &handler{http.FileServer(http.Dir(basePath))},
 	}
 	err = s.ListenAndServe()
 	if err != nil {
@@ -64,41 +77,53 @@ func main() {
 	}
 }
 
-type handler struct{}
+type handler struct {
+	staticHandler http.Handler
+}
 
-func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	var filepath = normalizePath(req.URL.EscapedPath())
+func (h *handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	var filepath = normalizePath(request.URL.EscapedPath())
 	if !isMarkdownRequest(filepath) {
-		w.WriteHeader(400)
-		w.Write([]byte("400 invalid request"))
+		h.staticHandler.ServeHTTP(writer, request)
 		return
+		//writer.WriteHeader(400)
+		//writer.Write([]byte("400 invalid request"))
+		//return
 	}
 	var data []byte
 	var err error
 	if !fileExists(filepath) {
-		w.WriteHeader(404)
-		w.Write([]byte("404 not found"))
+		writer.WriteHeader(404)
+		writer.Write([]byte("404 not found"))
 		return
 	}
 	data, err = ioutil.ReadFile(filepath)
 	if err != nil {
-		w.Header().Add("Content-type", "text/plain")
-		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
+		writer.Header().Add("Content-type", "text/plain")
+		writer.WriteHeader(500)
+		writer.Write([]byte(err.Error()))
 		return
 	}
 	var d = templateData{
 		Content: md.RenderToString(data),
 		Env:     envs,
 	}
-	err = mdTemplate.Execute(w, d)
+	d.Content = gitiles(d.Content)
+	var buffer bytes.Buffer
+	err = mdTemplate.Execute(&buffer, d)
 	if err != nil {
-		w.Header().Add("Content-type", "text/plain")
-		w.WriteHeader(500)
-		w.Write([]byte(err.Error()))
+		writer.Header().Add("Content-type", "text/plain")
+		writer.WriteHeader(500)
+		writer.Write([]byte(err.Error()))
 		return
 	}
-	//w.Write([]byte(defaultTemplate + content + cybermondayFooter))
+	//log.Println(buffer.String())
+	writer.Write(buffer.Bytes())
+}
+
+func gitiles(content string) string {
+	log.Println(content)
+	return content
 }
 
 func isMarkdownRequest(name string) bool {

@@ -20,3 +20,14 @@ And this is a table:
 This is a image:
 
 ![Gopher](https://golang.org/doc/gopher/frontpage.png)
+
+## Code
+
+This is code:
+
+```
+$ echo "do nothing"
+```
+
+
+`this` is also code

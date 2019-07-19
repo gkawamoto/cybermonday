@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="/styles.css">
+<meta name="viewport" content="width=device-width, user-scalable=no">
+</head>
+<body>
+<header>
+  <nav class="wrapper clearfix">
+    <div class="breadcrumbs">
+      <a href="/">{{ .Env.CYBERMONDAY_TITLE }}</a>
+    </div>
+  </nav>
+</header>
+<main class="wrapper clearfix">
+  <article>{{ .Content }}</article>
+</main>
+</body>
+</html>
