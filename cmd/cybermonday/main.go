@@ -108,7 +108,6 @@ func (h *handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		Content: md.RenderToString(data),
 		Env:     envs,
 	}
-	d.Content = gitiles(d.Content)
 	var buffer bytes.Buffer
 	err = mdTemplate.Execute(&buffer, d)
 	if err != nil {
@@ -119,11 +118,6 @@ func (h *handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	}
 	//log.Println(buffer.String())
 	writer.Write(buffer.Bytes())
-}
-
-func gitiles(content string) string {
-	log.Println(content)
-	return content
 }
 
 func isMarkdownRequest(name string) bool {
