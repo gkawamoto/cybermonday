@@ -15,7 +15,7 @@ docker run --name cybermonday -v $(pwd):/usr/share/nginx/html:ro gkawamoto/cyber
 
 ## Volume
 
-This containers uses a single volume mountpoint to host all the files (markdown or not): `/usr/share/nginx/html`. 
+This containers uses a single volume mountpoint to host all the files (markdown or not): `/usr/share/nginx/html`.
 
 ## Environment variables
 
@@ -33,4 +33,4 @@ Issues and merge-requests are welcome.
 MIT License
 
 ---
-Copyright (c) 2019, Gustavo Kawamoto
+Copyright (c) 2023, Gustavo Kawamoto

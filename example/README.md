@@ -25,9 +25,9 @@ This is a image:
 
 This is code:
 
-```
+```bash
 $ echo "do nothing"
+do nothing
 ```
-
 
 `this` is also code

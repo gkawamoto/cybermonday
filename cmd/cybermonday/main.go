@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -15,7 +14,7 @@ import (
 )
 
 var md = markdown.New(markdown.XHTMLOutput(true))
-var basePath, cybermondayBootstrapRef, cybermondayTitle string
+var basePath string
 var mdTemplate *template.Template
 var envs = map[string]string{}
 
@@ -45,7 +44,7 @@ func loadTemplate() {
 			}
 		}
 		var data []byte
-		data, err = ioutil.ReadFile(defaultTemplatePath)
+		data, err = os.ReadFile(defaultTemplatePath)
 		if err != nil {
 			log.Panic(err)
 		}
@@ -97,7 +96,7 @@ func (h *handler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		writer.Write([]byte("404 not found"))
 		return
 	}
-	data, err = ioutil.ReadFile(filepath)
+	data, err = os.ReadFile(filepath)
 	if err != nil {
 		writer.Header().Add("Content-type", "text/plain")
 		writer.WriteHeader(500)

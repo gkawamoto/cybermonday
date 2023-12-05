@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine AS builder
+FROM golang:1.21-alpine AS builder
 RUN apk add --no-cache git
 ENV GO111MODULE on
 COPY go.* /go/github.com/gkawamoto/cybermonday/
