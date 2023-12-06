@@ -4,7 +4,7 @@ Markdown server without complications.
 
 ## Overview
 
-Simple golang + nginx server to host Markdown files without too much complication.
+Simple golang server to host Markdown files without too much complication.
 This project was originally based on [https://github.com/russross/blackfriday](https://github.com/russross/blackfriday) (hence the name), but for the sake of simplicity and compliance, it was rewritten to use [https://gitlab.com/golang-commonmark/markdown](https://gitlab.com/golang-commonmark/markdown).
 
 ## Quickstart
@@ -31,6 +31,3 @@ Issues and merge-requests are welcome.
 ## License
 
 MIT License
-
----
-Copyright (c) 2023, Gustavo Kawamoto

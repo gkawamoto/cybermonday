@@ -31,3 +31,7 @@ do nothing
 ```
 
 `this` is also code
+
+## Linking
+
+You can link to [other](other.md) files.
